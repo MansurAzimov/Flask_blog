@@ -2,24 +2,24 @@ from flask import render_template,redirect,url_for,flash,request
 from flask_login import login_user,logout_user,current_user
 
 from core import app,db
-from core.models import User
+from core.models import User,Post,Comment
 
 
 
 @app.route ('/')
 def index():
-    posts = []
+    posts = Post.query.all()
     return render_template ('index.html',posts=posts)
 
-@app.route ('/post/ <int:id>')
-def post():
-    post = db.execute('SELECT * FROM posts WHERE id = :id', {'id': id}).fetchone()
+@app.route ('/post/<int:id>')
+def post(id):
+    post = Post.query.get(id)
     return render_template ('post.html', post=post)
 
 @app.route ('/post_delete/<int:id>')
 def post_delete(id):
-    db.execute('DELETE FROM posts WHERE id = :id',{'id': id})
-    db.commit
+    db.session.delete(post)
+    db.session.commit()
     flash('Пост удален','danger')
     return redirect(url_for('index'))
 
@@ -28,8 +28,9 @@ def new_post():
     if request.method == 'POST':
         title = request.form.get ('title')
         body = request.form.get ('body')
-        db.execute('INSERT INTO posts(title,body) VALUES (:title, :body)',{'title': title, 'body': body })
-        db.commit()
+        post = Post(title=title, body=body, author_id=current_user.id)
+        db.session.add(post)
+        db.session.commit()
         flash('Пост создан','success')
         return redirect(url_for('index'))
     return render_template ('new_post.html')
@@ -70,12 +71,13 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route ('/add_comment', methods=['POST'])
-def add_comment():
+@app.route ('/add_comment/<int:post_id>', methods=['POST'])
+def add_comment(post_id):
         message = request.form.get('message')
-        with open ('post.txt', 'a', encoding = 'utf-8') as f:
-            f.write (message + '\n')
+        comment = Comment(message=message, author_id=current_user.id,post_id=post_id)
+        db.session.add(comment)
+        db.session.commit()
         flash('Спасибо','success')
-        return redirect(url_for('post'))
+        return redirect(url_for('post',id=post_id))
 
 

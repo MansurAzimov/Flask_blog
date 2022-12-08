@@ -1,15 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 
-<span>Man</span>
-<span>2022</span>
+<span>{{ post.author }}</span>
 <h4>{{ post.title }}</h4>
 <p>{{ post.body }}</p>
+{% if current_user == post.author %}
 <a href="{{url_for ('post_delete', id=post.id) }}" class="btn btn-danger">Удалить пост</a><br>
-<br><form action="{{ url_for ('add_comment')}}" method="post">
+{% endif %}
+
+{% for comment in post.comments %}
+<p>{{ comment.author }}: {{ comment.message }}</p>
+{% endfor %}
+
+{% if current_user.is_authenticated %}
+<br><form action="{{ url_for ('add_comment', post_id=post.id) }}" method="post">
     <input  type="text" name="message" id="">
     <button>Оставить комментарий</button>
 </form>
+{% endif %}
 
 
 {% endblock %}
