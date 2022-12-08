@@ -1,9 +1,14 @@
 from flask import render_template,redirect,url_for,flash,request
+from flask_login import login_user,logout_user,current_user
+
 from core import app,db
+from core.models import User
+
+
 
 @app.route ('/')
 def index():
-    posts = db.execute('SELECT * FROM posts ORDER BY id DESC;').fetchall()
+    posts = []
     return render_template ('index.html',posts=posts)
 
 @app.route ('/post/ <int:id>')
@@ -31,11 +36,15 @@ def new_post():
 
 @app.route ('/login', methods=['GET','POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect (url_for('index'))
+
     if request.method == 'POST':
-        email = request.form.get('email')
+        username = request.form.get('username')
         password = request.form.get('password')
-        if email == 'admin@mail.ru' and password == 'admin':
-            #Login
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            login_user(user)
             return redirect (url_for('index'))
         else:
             flash('Данные для входа не верные','danger')
@@ -44,18 +53,21 @@ def login():
 @app.route ('/registration', methods=['GET','POST'])
 def registration():
     if request.method == 'POST':
-        email = request.form.get('email')
+        username = request.form.get('username')
         password = request.form.get('password')
-        with open ('post.txt', 'a', encoding = 'utf-8') as f:
-            f.write (email + '\n')
-            f.write (password + '\n')
+        if User.query.filter_by(username=username).first():
+            flash ('Профиль с таким именем существует', 'danger')
+            return redirect(url_for('registration'))
+        user = User( username = username, password=password )
+        db.session.add (user)
+        db.session.commit ()
         flash('Профиль создан','success')
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     return render_template ('registration.html')
 
 @app.route ('/logout')
 def logout():
-    #Logout
+    logout_user()
     return redirect(url_for('index'))
 
 @app.route ('/add_comment', methods=['POST'])

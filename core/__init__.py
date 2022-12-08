@@ -1,12 +1,17 @@
 from flask import Flask
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
+
+from config import Config
 
 app = Flask(__name__)
-engine = create_engine ('postgresql://mono@localhost/mono')
-db = scoped_session(sessionmaker(bind=engine))
+app.config.from_object(Config)
 
-app.config['SECRET_KEY'] = 'sgfa23/>"?!:@><//werwert'
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager(app)
 
-from core import routes
+
+from core import routes,models
