@@ -1,17 +1,20 @@
 from flask import render_template,redirect,url_for,flash,request
-from core import app
+from core import app,db
 
 @app.route ('/')
 def index():
-    return render_template ('index.html')
+    posts = db.execute('SELECT * FROM posts ORDER BY id DESC;').fetchall()
+    return render_template ('index.html',posts=posts)
 
-@app.route ('/post')
+@app.route ('/post/ <int:id>')
 def post():
-    return render_template ('post.html')
+    post = db.execute('SELECT * FROM posts WHERE id = :id', {'id': id}).fetchone()
+    return render_template ('post.html', post=post)
 
-@app.route ('/post_delete')
-def post_delete():
-    #Удаление поста из базы данных
+@app.route ('/post_delete/<int:id>')
+def post_delete(id):
+    db.execute('DELETE FROM posts WHERE id = :id',{'id': id})
+    db.commit
     flash('Пост удален','danger')
     return redirect(url_for('index'))
 
@@ -19,10 +22,9 @@ def post_delete():
 def new_post():
     if request.method == 'POST':
         title = request.form.get ('title')
-        content = request.form.get ('content')
-        with open ('post.txt', 'a', encoding = 'utf-8') as f:
-            f.write (title + '\n')
-            f.write (content + '\n')
+        body = request.form.get ('body')
+        db.execute('INSERT INTO posts(title,body) VALUES (:title, :body)',{'title': title, 'body': body })
+        db.commit()
         flash('Пост создан','success')
         return redirect(url_for('index'))
     return render_template ('new_post.html')

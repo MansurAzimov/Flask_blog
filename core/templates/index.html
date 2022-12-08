@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% for post in posts %}
+
 <div class="card">
     <div class="card-header">
-      1овз
     </div>
     <div class="card-body">
-      <h5 class="card-title">Цо бох и</h5>
-      <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-      <a href="{{ url_for ('post')}}" class="btn btn-primary">Читать далее</a>
+      <h5 class="card-title">{{ post.title }}</h5>
+      <p class="card-text">{{ post.body }}</p>
+      <a href="{{ url_for ('post', id =post.id)}}" class="btn btn-primary">Читать далее</a>
     </div>
   </div>
   <div class="container">  
+{% endfor %}
 
 {% endblock %}

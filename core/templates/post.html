@@ -3,8 +3,8 @@
 
 <span>Man</span>
 <span>2022</span>
-<h4>Python</h4>
-<p>safasfasafs</p>
+<h4>{{ post.title }}</h4>
+<p>{{ post.body }}</p>
 <a href="{{url_for ('post_delete')}}" class="btn btn-danger">Удалить пост</a><br>
 <br><form action="{{ url_for ('add_comment')}}" method="post">
     <input  type="text" name="message" id="">
