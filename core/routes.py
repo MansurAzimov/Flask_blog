@@ -1,5 +1,5 @@
 from flask import render_template,redirect,url_for,flash,request
-from flask_login import login_user,logout_user,current_user
+from flask_login import login_user,logout_user,current_user,login_required
 
 from core import app,db
 from core.models import User,Post,Comment
@@ -16,12 +16,6 @@ def post(id):
     post = Post.query.get(id)
     return render_template ('post.html', post=post)
 
-@app.route ('/post_delete/<int:id>')
-def post_delete(id):
-    db.session.delete(post)
-    db.session.commit()
-    flash('Пост удален','danger')
-    return redirect(url_for('index'))
 
 @app.route ('/new_post', methods=['GET','POST'])
 def new_post():
@@ -34,6 +28,7 @@ def new_post():
         flash('Пост создан','success')
         return redirect(url_for('index'))
     return render_template ('new_post.html')
+
 
 @app.route ('/login', methods=['GET','POST'])
 def login():
@@ -80,4 +75,14 @@ def add_comment(post_id):
         flash('Спасибо','success')
         return redirect(url_for('post',id=post_id))
 
+@app.route('/post_delete/<int:post_id>', methods=['GET'])
+@login_required
+def post_delete(post_id):
+    try:
+        p = Post.query.filter(Post.id == post_id).delete()
+        db.session.commit()
+        flash('Пост удален','success')
+    except:
+        db.session.rollback()
+    return redirect(url_for('index'))
 

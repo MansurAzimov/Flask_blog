@@ -24,10 +24,14 @@ class Post(db.Model):
     body = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     comments = db.relationship('Comment', backref = 'post', lazy=False)
+    
 
 class Comment(db.Model):
     __tablename__='comments'
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(128), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False) 
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+
+
+    
